@@ -97,3 +97,4 @@ zipp==3.18.1
 openai
 httpx[socks]
 sentencepiece
+protobuf
