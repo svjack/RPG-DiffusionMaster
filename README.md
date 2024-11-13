@@ -224,6 +224,46 @@ We recommend the utilization of GPT-4 or Gemini-Pro for users of Multilingual La
 
 
 ## Text-to-Image Generation
+### Genshin-Impact-XL simple Example (Conclusion relay on base model quality)
+```python
+from RegionalDiffusion_base import RegionalDiffusionPipeline
+from RegionalDiffusion_xl import RegionalDiffusionXLPipeline
+from diffusers.schedulers import KarrasDiffusionSchedulers,DPMSolverMultistepScheduler
+from mllm import local_llm,GPT4,DeepSeek
+import torch
+
+pipe = RegionalDiffusionXLPipeline.from_single_file("https://huggingface.co/svjack/GenshinImpact_XL_Base/blob/main/sdxlBase_v10.safetensors",
+                                                    torch_dtype=torch.float16, use_safetensors=True, variant="fp16")
+pipe.to("cuda")
+pipe.scheduler = DPMSolverMultistepScheduler.from_config(pipe.scheduler.config,use_karras_sigmas=True)
+pipe.enable_xformers_memory_efficient_attention()
+
+## User input
+prompt= ' A handsome young man with blonde curly hair and black suit  with a black twintail girl in red cheongsam in the bar.'
+prompt= ' ZHONGLI\(genshin impact\) with NING GUANG\(genshin impact\) in red cheongsam in the bar.'
+para_dict = DeepSeek(prompt)
+## MLLM based split generation results
+split_ratio = para_dict['Final split ratio']
+regional_prompt = para_dict['Regional Prompt']
+negative_prompt = "" # negative_prompt,
+
+images = pipe(
+    prompt=regional_prompt,
+    split_ratio=split_ratio, # The ratio of the regional prompt, the number of prompts is the same as the number of regions
+    batch_size = 1, #batch size
+    base_ratio = 0.5, # The ratio of the base prompt
+    base_prompt= prompt,
+    num_inference_steps=20, # sampling step
+    height = 1024,
+    negative_prompt=negative_prompt, # negative prompt
+    width = 1024,
+    seed = 0,# random seed
+    guidance_scale = 7.0
+).images[0]
+images
+```
+
+![test_zhong_ning](https://github.com/user-attachments/assets/7ef0e177-cf01-402f-8788-229a797cfdbf)
 
 #### 1. Quick Start
 
