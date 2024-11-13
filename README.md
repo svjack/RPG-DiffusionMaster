@@ -207,6 +207,8 @@ git clone https://github.com/svjack/RPG-DiffusionMaster
 cd RPG-DiffusionMaster
 conda create -n RPG python==3.9
 conda activate RPG
+pip install ipykernel
+python -m ipykernel install --user --name RPG --display-name "RPG"
 pip install -r requirements.txt
 git clone https://github.com/huggingface/diffusers
 ```
