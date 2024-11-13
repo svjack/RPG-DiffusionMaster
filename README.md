@@ -203,7 +203,7 @@ Text prompt: From left to right, an acient Chinese city in spring, summer, autum
 **1. Set Environment**
 
 ```bash
-git clone https://github.com/YangLing0818/RPG-DiffusionMaster
+git clone https://github.com/svjack/RPG-DiffusionMaster
 cd RPG-DiffusionMaster
 conda create -n RPG python==3.9
 conda activate RPG
