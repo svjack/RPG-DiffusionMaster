@@ -199,7 +199,7 @@ def local_llm(prompt,model_path=None):
         output = output.replace(textprompt,'')
     return get_params_dict(output)
 
-def get_params_dict(output_text):
+def get_params_dict_0(output_text):
     response = output_text
     # Find Final split ratio
     split_ratio_match = re.search(r"Final split ratio: ([\d.,;]+)", response)
@@ -219,7 +219,7 @@ def get_params_dict(output_text):
     image_region_dict = {'Final split ratio': final_split_ratio, 'Regional Prompt': regional_prompt}    
     return image_region_dict
 
-def get_params_dict(output_text):
+def get_params_dict_1(output_text):
     response = output_text
     # Find Final split ratio
     split_ratio_match = re.search(r"\*\*Final split ratio\*\*: ([\d.,;]+)", response)
@@ -238,3 +238,9 @@ def get_params_dict(output_text):
 
     image_region_dict = {'Final split ratio': final_split_ratio, 'Regional Prompt': regional_prompt}    
     return image_region_dict
+
+def get_params_dict(output_text):
+    try:
+        return get_params_dict_0(output_text)
+    except:
+        return get_params_dict_1(output_text)
