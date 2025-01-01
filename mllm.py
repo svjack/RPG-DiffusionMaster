@@ -218,3 +218,23 @@ def get_params_dict(output_text):
 
     image_region_dict = {'Final split ratio': final_split_ratio, 'Regional Prompt': regional_prompt}    
     return image_region_dict
+
+def get_params_dict(output_text):
+    response = output_text
+    # Find Final split ratio
+    split_ratio_match = re.search(r"\*\*Final split ratio\*\*: ([\d.,;]+)", response)
+    if split_ratio_match:
+        final_split_ratio = split_ratio_match.group(1)
+        print("Final split ratio:", final_split_ratio)
+    else:
+        print("Final split ratio not found.")
+    # Find Regioanl Prompt
+    prompt_match = re.search(r"\*\*Regional Prompt\*\*: (.*?)(?=\n\n|\Z)", response, re.DOTALL)
+    if prompt_match:
+        regional_prompt = prompt_match.group(1).strip()
+        print("Regional Prompt:", regional_prompt)
+    else:
+        print("Regional Prompt not found.")
+
+    image_region_dict = {'Final split ratio': final_split_ratio, 'Regional Prompt': regional_prompt}    
+    return image_region_dict
