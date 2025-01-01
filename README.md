@@ -211,7 +211,8 @@ pip install ipykernel
 python -m ipykernel install --user --name RPG --display-name "RPG"
 pip install -r requirements.txt
 pip install -U openai
-pip install datasets huggingface_hub
+pip install datasets
+pip install huggingface_hub==0.25.0
 git clone https://github.com/huggingface/diffusers
 ```
 
