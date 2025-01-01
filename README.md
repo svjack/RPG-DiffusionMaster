@@ -268,6 +268,85 @@ images
 
 ![test_zhong_ning](https://github.com/user-attachments/assets/7ef0e177-cf01-402f-8788-229a797cfdbf)
 
+- Produce this style dataset
+- Produce Prompt dataset
+```python
+from datasets import load_dataset
+from mllm import DeepSeek
+import pandas as pd
+from tqdm import tqdm
+from IPython import display
+import os
+
+# Load dataset
+ds = load_dataset("svjack/daily-actions-en-zh")
+action_list = ds["train"].to_pandas()["en"].dropna().drop_duplicates().values.tolist()
+
+# Define prompt format
+prompt_format = ' ZHONGLI\(genshin impact\) with NING GUANG\(genshin impact\) in red cheongsam. {}'
+prompt_list = pd.Series(action_list).map(
+    lambda x: (x, prompt_format.format(x))
+).values.tolist()
+
+# Initialize an empty list to store results
+req = []
+
+# Define the output CSV file
+output_csv = "zhongli_ningguang_seed.csv"
+
+# Check if the CSV file already exists
+if os.path.exists(output_csv):
+    # Load existing data
+    req_df = pd.read_csv(output_csv)
+    req = req_df.values.tolist()
+else:
+    # Create an empty DataFrame with the required columns
+    req_df = pd.DataFrame(columns=["action", "prompt", "split_ratio", "regional_prompt"])
+
+# Iterate over the prompt list
+for action, prompt in tqdm(prompt_list):
+    # Skip if the action is already processed
+    if action in req_df["action"].values:
+        continue
+
+    succ = False
+    for _ in range(10):
+        try:
+            # Generate parameters using DeepSeek
+            para_dict = DeepSeek(prompt)
+            split_ratio = para_dict['Final split ratio']
+            regional_prompt = para_dict['Regional Prompt']
+            succ = True
+
+            # Append the result to the list
+            req.append((action, prompt, split_ratio, regional_prompt))
+
+            # Save the result incrementally to the CSV file
+            new_row = pd.DataFrame([{
+                "action": action,
+                "prompt": prompt,
+                "split_ratio": split_ratio,
+                "regional_prompt": regional_prompt
+            }])
+            req_df = pd.concat([req_df, new_row], ignore_index=True)
+            req_df.to_csv(output_csv, index=False)
+
+            break
+        except Exception as e:
+            print(f"Error for action '{action}': {e}")
+            continue
+
+    # Clear the output for the next iteration
+    display.clear_output(wait=True)
+
+print("Processing complete. Results saved to:", output_csv)
+```
+- Produce Images (delete some pics by oneself)
+```bash
+python generate_images_by_csv.py --input_csv zhongli_ningguang_seed.csv --output_dir zhongli_ningguang_5_times_all --num_inference_steps 35 --guidance_scale 7.0 --times 3
+```
+
+
 #### 1. Quick Start
 
 For individuals equipped with constrained computational resources, we here provide a simple notebook demonstration that partitions the image into two equal-sized subregions. By making minor alterations to select functions within the diffusers library, one may achieve commendable outcomes utilizing base diffusion models such as SD v1.4, v1.5, v2.0, and v2.1, as mentioned in our paper. Additionally, you can apply your customized configurations to experiment with a graphics card possessing 8GB of VRAM. For an in-depth exposition, kindly refer to our [Example_Notebook](RegionalDiffusion_playground.ipynb).
