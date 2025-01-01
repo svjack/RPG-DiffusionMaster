@@ -210,6 +210,7 @@ conda activate RPG
 pip install ipykernel
 python -m ipykernel install --user --name RPG --display-name "RPG"
 pip install -r requirements.txt
+pip install -U openai
 git clone https://github.com/huggingface/diffusers
 ```
 
