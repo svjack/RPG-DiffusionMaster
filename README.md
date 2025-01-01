@@ -341,9 +341,73 @@ for action, prompt in tqdm(prompt_list):
 
 print("Processing complete. Results saved to:", output_csv)
 ```
+
 - Produce Images (delete some pics by oneself)
 ```bash
 python generate_images_by_csv.py --input_csv zhongli_ningguang_seed.csv --output_dir zhongli_ningguang_5_times_all --num_inference_steps 35 --guidance_scale 7.0 --times 3
+```
+
+- Produce Huggingface dataset
+```python
+##### 分成 3 类之后 与 zhongli_ningguang_seed.csv 中的其他 信息列合并
+
+##### man
+##### woman
+##### couple
+
+import os
+import pandas as pd
+
+# Load the existing DataFrame
+df = pd.read_csv("zhongli_ningguang_seed.csv")
+
+# Define the directories containing the images
+directories = ["three/man", "three/woman", "three/couple"]
+
+# Initialize a list to store the matched results
+matched_results = []
+
+# Iterate over each row in the DataFrame
+for _, row in df.iterrows():
+    action = row["action"]
+    matched_images = []
+
+    # Search for images in each directory
+    for directory in directories:
+        for filename in os.listdir(directory):
+            # Check if the action string is in the filename
+            if action in filename:
+                # Construct the full image path
+                image_path = os.path.join(directory, filename)
+                matched_images.append(image_path)
+
+    # If any images are matched, add them to the results
+    if matched_images:
+        for image_path in matched_images:
+            matched_results.append({
+                "action": action,
+                "prompt": row["prompt"],
+                "split_ratio": row["split_ratio"],
+                "regional_prompt": row["regional_prompt"],
+                "image_path": image_path
+            })
+
+# Create a new DataFrame from the matched results
+matched_df = pd.DataFrame(matched_results)
+matched_df["image_type"] = matched_df["image_path"].map(lambda x: str(x).split("/")[1])
+matched_df
+
+matched_df["image_type"].value_counts()
+
+from datasets import Dataset
+from PIL import Image
+image_ds = Dataset.from_pandas(matched_df).map(
+    lambda x: {"image": Image.open(x["image_path"])}
+).remove_columns(["image_path"])
+
+image_ds.push_to_hub("svjack/Genshin-Impact-ZhongLi-NingGuang-Couple-Image-Half")
+
+image_ds.push_to_hub("svjack/Genshin-Impact-ZhongLi-NingGuang-Couple-Image")
 ```
 
 
